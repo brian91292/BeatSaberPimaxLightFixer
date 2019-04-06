@@ -3,6 +3,7 @@ using IllusionPlugin;
 using System.Collections;
 using System.Linq;
 using System.Reflection;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -10,14 +11,14 @@ namespace PimaxLightFixer
 {
     public class Plugin : IPlugin
     {
-        public string Name => "PimaxLightFixer";
-        public string Version => "1.0.1";
+        public string Name => "PimaxUnfucker";
+        public string Version => "1.0.2";
         public void OnApplicationStart()
         {
             SceneManager.activeSceneChanged += SceneManagerOnActiveSceneChanged;
             SceneManager.sceneLoaded += SceneManager_sceneLoaded;
 
-            var harmonyInstance = HarmonyInstance.Create("com.brian91292.beatsaber.pimaxlightfixer");
+            var harmonyInstance = HarmonyInstance.Create("com.brian91292.beatsaber.pimaxunfucker");
             harmonyInstance.PatchAll(Assembly.GetExecutingAssembly());
         }
 
@@ -25,6 +26,8 @@ namespace PimaxLightFixer
         {
             if(Config.DisableLighting)
                 SharedCoroutineStarter.instance.StartCoroutine(DisablePrePassLights());
+
+            SharedCoroutineStarter.instance.StartCoroutine(SwapSpriteTextShader());
         }
 
         private IEnumerator DisablePrePassLights()
@@ -39,9 +42,30 @@ namespace PimaxLightFixer
             });
         }
 
+        private IEnumerator SwapSpriteTextShader()
+        {
+            yield return new WaitForSeconds(0.1f);
+
+            Material material = Resources.FindObjectsOfTypeAll<Material>().Where(m => m.name == "UINoGlow").FirstOrDefault();
+
+            Resources.FindObjectsOfTypeAll<UnityEngine.UI.Image>()?.ToList().ForEach(t =>
+            {
+                var mat = Material.Instantiate(material);
+                mat.color = t.material.color.ColorWithAlpha(t.material.color.a == 0 ? 0.7f : t.material.color.a);
+                t.material = mat;
+            });
+
+            Resources.FindObjectsOfTypeAll<TMP_Text>()?.ToList().ForEach(t =>
+            {
+                var mat = Material.Instantiate(material);
+                mat.color = t.material.color.ColorWithAlpha(t.material.color.a == 0 ? 0.7f : t.material.color.a);
+                t.material = mat;
+            });
+        }
+
         private void SceneManager_sceneLoaded(Scene arg0, LoadSceneMode arg1)
         {
-            if (arg0.name == "Menu")
+            if (arg0.name == "MenuCore")
                 Settings.OnLoad();
         }
 

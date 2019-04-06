@@ -1,4 +1,5 @@
-﻿using CustomUI.Settings;
+﻿using CustomUI.BeatSaber;
+using CustomUI.Settings;
 using IllusionPlugin;
 using System;
 using System.Collections.Generic;
